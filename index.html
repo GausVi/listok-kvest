@@ -159,6 +159,14 @@
       border-radius: 18px;
       display: block;
     }
+    .place {
+      margin: 18px 0 0;
+      text-align: center;
+      font-weight: 500;
+      font-size: 18px;
+      line-height: 1.3;
+      color: #7a5a3a;
+    }
   </style>
 </head>
 <body>
@@ -194,14 +202,62 @@
       <img class="hint hidden" id="hint-pic" alt="Подсказка к загадке">
     </section>
 
-    <section class="screen hidden" id="done">
+    <section class="screen hidden" id="machine">
       <div class="scroll">
         <div class="roll"></div>
         <div class="sheet">
-          <p class="poem">Пять отгадок собраны.<br>Листочек не теряй.</p>
+          <p class="poem">Славно ты потрудилась.<br>Теперь стоит немного размяться<br>и найти в квартире предмет,<br>про который эта загадка.</p>
+          <p class="poem">Машина эта без колёс,<br>гудит почти как пылесос,<br>с порошком стиральным дружит,<br>в барабане бельё кружит.</p>
         </div>
         <div class="roll"></div>
       </div>
+      <label for="machine-answer">Отгадка</label>
+      <input id="machine-answer" type="text" autocomplete="off" enterkeyhint="done">
+      <p class="msg" id="machine-msg"></p>
+      <button type="button" id="machine-check">Готово</button>
+    </section>
+
+    <section class="screen hidden" id="run">
+      <div class="scroll">
+        <div class="roll"></div>
+        <div class="sheet">
+          <p class="poem">Верно!<br>Быстрей беги к этому предмету<br>в квартире.</p>
+        </div>
+        <div class="roll"></div>
+      </div>
+      <label for="found-answer">Когда найдёшь</label>
+      <input id="found-answer" type="text" autocomplete="off" placeholder="нашла" enterkeyhint="done">
+      <p class="msg" id="found-msg"></p>
+      <button type="button" id="found">Нашла</button>
+    </section>
+
+    <section class="screen hidden" id="box">
+      <div class="scroll">
+        <div class="roll"></div>
+        <div class="sheet">
+          <p class="poem">Этот бокс тебе на радость,<br>Чтоб скрасить день твой трудовой:<br>Тут для личика приятность,<br>Для волос блеск неземной.<br>Чтобы тельце в душе кайфовало,<br>В ванне с солью отмокало.<br>Всё, что пробовали сами,<br>Мы с душой собрали в нём.<br>Но среди всего добра<br>Есть записочка одна.<br>Ты записку ту открой,<br>Ведь подарок твой другой 😉<br>Там внутри найдёшь ты ключ,<br>Что откроет верный путь.</p>
+        </div>
+        <div class="roll"></div>
+      </div>
+      <label for="beauty-answer">Слово со дна</label>
+      <input id="beauty-answer" type="text" autocomplete="off" enterkeyhint="done">
+      <p class="msg" id="beauty-msg"></p>
+      <button type="button" id="beauty-check">Готово</button>
+    </section>
+
+    <section class="screen hidden" id="balloon">
+      <div class="scroll">
+        <div class="roll"></div>
+        <div class="sheet">
+          <p class="poem">Изначально небольшой.<br>Разной формы и цветной.<br>Лишь его заполнит газ,<br>Станет больше в много раз.<br>Поскорей его найди<br>И подсказку получи!</p>
+          <p class="place">в комнате с диваном</p>
+        </div>
+        <div class="roll"></div>
+      </div>
+      <label for="clue-answer">Подсказка</label>
+      <input id="clue-answer" type="text" autocomplete="off" enterkeyhint="done">
+      <p class="msg" id="clue-msg"></p>
+      <button type="button" id="clue-check">Готово</button>
     </section>
   </main>
   <script>
@@ -241,7 +297,10 @@
 
     const intro = document.getElementById("intro");
     const play = document.getElementById("play");
-    const done = document.getElementById("done");
+    const machine = document.getElementById("machine");
+    const run = document.getElementById("run");
+    const box = document.getElementById("box");
+    const balloon = document.getElementById("balloon");
     const answer = document.getElementById("answer");
     const msg = document.getElementById("msg");
     const hintPic = document.getElementById("hint-pic");
@@ -284,7 +343,8 @@
         step += 1;
         if (step >= riddles.length) {
           play.classList.add("hidden");
-          done.classList.remove("hidden");
+          machine.classList.remove("hidden");
+          document.getElementById("machine-answer").focus();
           return;
         }
         showRiddle();
@@ -296,6 +356,63 @@
     document.getElementById("check").addEventListener("click", check);
     answer.addEventListener("keydown", (event) => {
       if (event.key === "Enter") check();
+    });
+
+    const machineWords = ["стиральная машина", "стиральная машинка", "стиралка"];
+    const foundWords = ["нашла", "нашел", "нашёл"];
+    const beautyWords = ["красота"];
+    const clueWords = [];
+
+    function bindCheck(inputId, msgId, buttonId, words, onOk) {
+      const input = document.getElementById(inputId);
+      const note = document.getElementById(msgId);
+      function runCheck() {
+        const word = norm(input.value);
+        if (!word) {
+          note.textContent = "Сначала впиши ответ.";
+          return;
+        }
+        if (words.indexOf(word) !== -1) {
+          onOk();
+          return;
+        }
+        note.textContent = "Пока не то.";
+      }
+      document.getElementById(buttonId).addEventListener("click", runCheck);
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") runCheck();
+      });
+    }
+
+    bindCheck("machine-answer", "machine-msg", "machine-check", machineWords, () => {
+      machine.classList.add("hidden");
+      run.classList.remove("hidden");
+    });
+
+    function foundOk() {
+      run.classList.add("hidden");
+      box.classList.remove("hidden");
+      document.getElementById("beauty-answer").focus();
+    }
+    document.getElementById("found").addEventListener("click", foundOk);
+    document.getElementById("found-answer").addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      const word = norm(document.getElementById("found-answer").value);
+      if (foundWords.indexOf(word) !== -1) {
+        foundOk();
+        return;
+      }
+      document.getElementById("found-msg").textContent = word ? "Напиши «нашла» или нажми кнопку." : "Нажми кнопку «Нашла».";
+    });
+
+    bindCheck("beauty-answer", "beauty-msg", "beauty-check", beautyWords, () => {
+      box.classList.add("hidden");
+      balloon.classList.remove("hidden");
+      document.getElementById("clue-answer").focus();
+    });
+
+    bindCheck("clue-answer", "clue-msg", "clue-check", clueWords, () => {
+      document.getElementById("clue-msg").textContent = "Дальше откроется, когда подсказка будет вписана.";
     });
 
     document.getElementById("hint").addEventListener("click", () => {
