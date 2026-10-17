@@ -428,7 +428,6 @@
       msg.textContent = "";
       hintPic.classList.add("hidden");
       hintPic.removeAttribute("src");
-      answer.focus();
     }
 
     document.getElementById("go").addEventListener("click", () => {
@@ -448,7 +447,6 @@
         if (step >= riddles.length) {
           play.classList.add("hidden");
           machine.classList.remove("hidden");
-          document.getElementById("machine-answer").focus();
           return;
         }
         showRiddle();
@@ -505,7 +503,6 @@
     function foundOk() {
       run.classList.add("hidden");
       box.classList.remove("hidden");
-      document.getElementById("beauty-answer").focus();
     }
     document.getElementById("found").addEventListener("click", foundOk);
     document.getElementById("found-answer").addEventListener("keydown", (event) => {
@@ -521,7 +518,6 @@
     bindCheck("beauty-answer", "beauty-msg", "beauty-check", beautyWords, () => {
       box.classList.add("hidden");
       balloon.classList.remove("hidden");
-      document.getElementById("clue-answer").focus();
     });
 
     bindCheck("clue-answer", "clue-msg", "clue-check", clueWords, () => {
@@ -567,9 +563,34 @@
       soft.className = "slot";
       soft.textContent = "Ь";
       slots.append(soft);
-      const first = scheme.querySelector(".letter");
-      if (first) first.focus();
     }
+
+    document.addEventListener("focusin", (event) => {
+      const input = event.target;
+      if (!input || input.tagName !== "INPUT") return;
+      setTimeout(() => {
+        let node = input.nextElementSibling;
+        let button = null;
+        while (node) {
+          if (node.tagName === "BUTTON") {
+            button = node;
+            break;
+          }
+          node = node.nextElementSibling;
+        }
+        if (!button) return;
+        const bottom = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const rect = button.getBoundingClientRect();
+        if (rect.bottom > bottom - 12) window.scrollBy(0, rect.bottom - bottom + 24);
+      }, 400);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      const active = document.activeElement;
+      if (!active || active.tagName !== "INPUT") return;
+      if (event.target.closest("input, button, textarea, label")) return;
+      active.blur();
+    });
 
     function paintWord() {
       const inputs = document.querySelectorAll("#scheme .letter");
